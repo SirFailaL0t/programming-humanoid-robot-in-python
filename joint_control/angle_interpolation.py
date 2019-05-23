@@ -19,9 +19,8 @@
     # preceding the point, the second describes the curve following the point.
 '''
 
-
+from keyframes import leftBellyToStand
 from pid import PIDAgent
-from keyframes import hello
 
 
 class AngleInterpolationAgent(PIDAgent):
@@ -42,9 +41,36 @@ class AngleInterpolationAgent(PIDAgent):
         target_joints = {}
         # YOUR CODE HERE
 
+        # TODO: Add comments
+
+        for n, name in enumerate(keyframes[0]):
+
+            target_joints[name] = 0
+
+            time = perception.game_state.time
+
+            moveidx = next((i for i, value in enumerate(keyframes[1][n]) if value > time), len(keyframes[1][n]))
+
+            if moveidx < len(keyframes[1][n]):
+                movetime = keyframes[1][n][moveidx - 1]
+
+                it = (time if moveidx == 0 else time - movetime) / (
+                    keyframes[1][n][moveidx] if moveidx == 0 else keyframes[1][n][moveidx] - movetime)
+
+                p0 = (0.0 if moveidx == 0 else keyframes[2][n][moveidx - 1][0])
+
+                p1 = (0.0 if moveidx == 0 else keyframes[2][n][moveidx - 1][0] + keyframes[2][n][moveidx - 1][2][2])
+
+                p2 = keyframes[2][n][moveidx][0] + keyframes[2][n][moveidx][1][2]
+
+                p3 = keyframes[2][n][moveidx][0]
+
+                target_joints[name] = ((1 - it) ** 3) * p0 + 3 * ((1 - it) ** 2) * it * p1 + 3 * (1 - it) * (
+                        it ** 2) * p2 + (it ** 3) * p3
+
         return target_joints
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = hello()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = leftBellyToStand()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()

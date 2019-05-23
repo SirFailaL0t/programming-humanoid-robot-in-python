@@ -34,8 +34,8 @@ class PIDController(object):
         self.e1 = np.zeros(size)
         self.e2 = np.zeros(size)
         # ADJUST PARAMETERS BELOW
-        delay = 0
-        self.Kp = 0
+        delay = 5
+        self.Kp = 4
         self.Ki = 0
         self.Kd = 0
         self.y = deque(np.zeros(size), maxlen=delay + 1)
@@ -52,10 +52,36 @@ class PIDController(object):
         @param sensor: current values from sensor
         @return control signal
         '''
+
         # YOUR CODE HERE
 
-        return self.u
+        # TODO: Complete comments
 
+        # delay in number of steps
+        d = self.y.maxlen - 1
+
+        # sum of distances between the predicted positions
+        dist = 0
+
+        for i in range(len(self.y) - 1):
+            if self.y[-(i + 2)].any():
+                dist += self.y[-(i + 1)] - self.y[-(i + 2)]
+
+        # error in t corrected with prediction 
+        e0 = target - sensor - dist
+
+        # calculate next u
+        part1 = self.u + (self.Kp + self.Ki * self.dt + self.Kd / self.dt) * e0
+        self.u = part1 - (self.Kp + 2 * (self.Kd / self.dt)) * self.e1 + (self.Kd / self.dt) * self.e2
+
+        # update the errors t-1 and t-2
+        self.e2 = self.e1
+        self.e1 = e0
+
+        # append the prediction of the next step
+        self.y.append(sensor + self.u * self.dt)
+
+        return self.u
 
 class PIDAgent(SparkAgent):
     def __init__(self, simspark_ip='localhost',
