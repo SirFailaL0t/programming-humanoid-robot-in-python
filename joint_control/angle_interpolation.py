@@ -19,7 +19,7 @@
     # preceding the point, the second describes the curve following the point.
 '''
 
-from keyframes import leftBellyToStand
+from keyframes import hello
 from pid import PIDAgent
 
 
@@ -41,7 +41,7 @@ class AngleInterpolationAgent(PIDAgent):
         target_joints = {}
         # YOUR CODE HERE
 
-        # TODO: Add comments
+        # This function depends on the game time. To start a keyframe based movement press k when in simspark
 
         for n, name in enumerate(keyframes[0]):
 
@@ -49,28 +49,38 @@ class AngleInterpolationAgent(PIDAgent):
 
             time = perception.game_state.time
 
+            # Gets the index of the next keyframe that is to be interpolated, in relation to the game_state.time
             moveidx = next((i for i, value in enumerate(keyframes[1][n]) if value > time), len(keyframes[1][n]))
 
             if moveidx < len(keyframes[1][n]):
                 movetime = keyframes[1][n][moveidx - 1]
 
-                it = (time if moveidx == 0 else time - movetime) / (
-                    keyframes[1][n][moveidx] if moveidx == 0 else keyframes[1][n][moveidx] - movetime)
+                # The time in percent between the frames
+                it = (time if moveidx == 0 else time - movetime) / \
+                     (keyframes[1][n][moveidx] if moveidx == 0 else keyframes[1][n][moveidx] - movetime)
 
+                # Beginning positon
                 p0 = (0.0 if moveidx == 0 else keyframes[2][n][moveidx - 1][0])
 
+                # Right handle of first frame
                 p1 = (0.0 if moveidx == 0 else keyframes[2][n][moveidx - 1][0] + keyframes[2][n][moveidx - 1][2][2])
 
+                # Left handle of target frame
                 p2 = keyframes[2][n][moveidx][0] + keyframes[2][n][moveidx][1][2]
 
+                # Target position
                 p3 = keyframes[2][n][moveidx][0]
 
+                # Calculation of the next bezier interpolated position
                 target_joints[name] = ((1 - it) ** 3) * p0 + 3 * ((1 - it) ** 2) * it * p1 + 3 * (1 - it) * (
                         it ** 2) * p2 + (it ** 3) * p3
+
+                # Unfixed problem: The robot fails when trying to stand up.
+                # Could possibly be fixed with better handles for bezier.
 
         return target_joints
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = leftBellyToStand()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = hello()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()

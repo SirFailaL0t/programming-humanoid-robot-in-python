@@ -5,7 +5,7 @@
 
 '''
 
-
+from keyframes import leftBellyToStand, leftBackToStand
 from recognize_posture import PostureRecognitionAgent
 
 
@@ -18,6 +18,14 @@ class StandingUpAgent(PostureRecognitionAgent):
         posture = self.posture
         # YOUR CODE HERE
 
+        # Keyframe based movement is started by pressing k in SimSpark
+        # Unfixed Problem, when the robot falls on its belly it makes a headstand when stiffness is set to 1
+        # I did not make Keyframes for standing up from that position
+        if (posture == 'Back'):
+            self.keyframes = leftBackToStand()
+        if (posture == 'Belly'):
+            self.keyframes = leftBellyToStand()
+
 
 class TestStandingUpAgent(StandingUpAgent):
     '''this agent turns off all motor to falls down in fixed cycles
@@ -29,7 +37,7 @@ class TestStandingUpAgent(StandingUpAgent):
                  sync_mode=True):
         super(TestStandingUpAgent, self).__init__(simspark_ip, simspark_port, teamname, player_id, sync_mode)
         self.stiffness_on_off_time = 0
-        self.stiffness_on_cycle = 10  # in seconds
+        self.stiffness_on_cycle = 0  # in seconds
         self.stiffness_off_cycle = 3  # in seconds
 
     def think(self, perception):
