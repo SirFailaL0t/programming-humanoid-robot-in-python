@@ -17,6 +17,7 @@ from scipy.linalg import pinv
 from forward_kinematics import ForwardKinematicsAgent
 
 
+# helper function from lecture notebook
 def from_trans(m):
     return [m[0, -1], m[1, -1], m[2, -1], atan2(m[1, 0], m[0, 0])]
 
@@ -32,16 +33,16 @@ class InverseKinematicsAgent(ForwardKinematicsAgent):
         # joint_angles = []
         # YOUR CODE HERE
 
-        max_step = 0.007
+        max_step = 0.01
         lambda_ = 1
         joint_angles = np.random.random(len(self.chains[effector_name]) - 1)
         target = np.matrix([from_trans(transform)]).T
-        Ts = [identity(len(self.chains[effector_name] - 1))]
+
+        Ts = []
+        for k, name in enumerate(self.chains[effector_name]):
+            Ts.append(self.transforms[name])
 
         for i in range(1000):
-
-            for k, name in enumerate(self.chains[effector_name]):
-                Ts.append(self.transforms[name])
 
             Te = np.matrix([from_trans(Ts[-1])]).T
             e = target - Te
@@ -67,6 +68,7 @@ class InverseKinematicsAgent(ForwardKinematicsAgent):
         '''
         # YOUR CODE HERE
 
+        self.forward_kinematics(self.perception.joint)
         joint_angles = self.inverse_kinematics(effector_name, transform)
 
         name = []
@@ -77,7 +79,8 @@ class InverseKinematicsAgent(ForwardKinematicsAgent):
             time.append([1.0])
             name.append(j)
 
-        self.keyframe = (name, time, angle)  # the result joint angles have to fill in
+        self.keyframe = (name, time, angle)
+        # print(name, time, angle)
 
 
 if __name__ == '__main__':
