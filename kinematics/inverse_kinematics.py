@@ -80,7 +80,7 @@ class InverseKinematicsAgent(ForwardKinematicsAgent):
             name.append(j)
 
         self.keyframe = (name, time, angle)
-        # print(name, time, angle)
+        print(name, time, angle)
 
 
 if __name__ == '__main__':
